@@ -23,14 +23,30 @@ You can install/update/remove packages via Poetry, a dependency-management & pac
 
 ### How to use Poetry for my project?
 
-Make sure to have the right python-version installed (Here 3.9.11). 
+Make sure to have the right python-version installed (Here 3.8.2). 
 Then install poetry via Windows-powershell with: 
 
 ```
 (Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -UseBasicParsing).Content | python 
 ```
 
-To use poetry within your project simply navigate into your root-directory and start your poetry-shell (poetry will use your virtualenv-python) with:
+## How does poetry install dependencies?
+
+### Installing without poetry.lock
+
+If you have never run the command (within the root-directory of your project) before and there is also no poetry.lock file present, Poetry simply resolves all dependencies listed in your pyproject.toml file and downloads the latest version of their files.
+
+When Poetry has finished installing, it writes all of the packages and the exact versions of them that it downloaded to the poetry.lock file, locking the project to those specific versions. You should commit the poetry.lock file to your project repo so that all people working on the project are locked to the same versions of dependencies (more below).
+
+### Installing with poetry.lock
+
+This brings us to the second scenario. If there is already a poetry.lock file as well as a pyproject.toml file when you run poetry install, it means either you ran the install command before, or someone else on the project ran the install command and committed the poetry.lock file to the project (which is good).
+
+Either way, running install when a poetry.lock file is present resolves and installs all dependencies that you listed in pyproject.toml, but Poetry uses the exact versions listed in poetry.lock to ensure that the package versions are consistent for everyone working on your project. As a result you will have all dependencies requested by your pyproject.toml file, but they may not all be at the very latest available versions (some of the dependencies listed in the poetry.lock file may have released newer versions since the file was created). This is by design, it ensures that your project does not break because of unexpected changes in dependencies.
+
+### Poetry within project
+
+To use poetry within your project simply navigate into your root-directory (QuaselDoku) and start your poetry-shell (poetry will use your virtualenv-python) with:
 
 ```
 poetry shell
@@ -47,7 +63,7 @@ When you run the poetry add command, Poetry automatically updates pyproject.toml
 To install/update/remove packages simply run:
 
 ```
-poetry install <package-name>
+poetry install <package-name> # install poetry package
 poetry update (<package-name>)
 poetry remove <package-name>
 ```
@@ -63,9 +79,11 @@ For faster computation, it is recommended to use PyTorch together with CUDA inst
 
 and then install it using pip as package manager. Make sure to have the poetry-shell activated in advance by going to your projects root-directory and executing <code>poetry shell</code>, to guarantee that all pytorch-dependencies (modules/libraries etc.) will be saved within your poetry environment.
 
+Usually, the following command should be sufficient to install pytorch with CUDA 11.3:
 
-
-
+```
+pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113
+```
 
 ## How to run your Kedro pipeline
 
@@ -151,3 +169,34 @@ To automatically strip out all output cell contents before committing to `git`, 
 
 [Further information about building project documentation and packaging your project](https://kedro.readthedocs.io/en/stable/tutorial/package_a_project.html)
 
+## Important Remarks
+
+### notebook-kernel after 'kedro jupyter notebook' cannot be loaded:
+
+If you can execute 'kedro jupyter notebook' to run your notebooks within the kedro-context (to access the datacatalog via 'catalog.load(...)' f.e.), make sure your ipython kernel is configurated to your python runtime. First find the location of your python-environment by navigating to the root-directory (QuaselDoku) and enter:
+
+```
+poetry shell
+where python
+```
+
+One of the entries is the path to your environment python.exe. Copy the path and navigate to the configuration of your (kedro) ipython-kernel. Simply open the file-explorer and insert %appdata% and press enter. From there navigate to jupyter\kernels\pythonX\kernel.json. This is the configuration-file for your kedro ipython-kernel. Change the first argument to your python.exe-path. The file should then look similar to this:
+
+> {
+>  "argv": [
+>    "C:\\Users\\<User-Name>\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\quaseldoku-nkif5tvV-py3.8\\Scripts\\python.exe",
+>    "-m",
+>    "ipykernel_launcher",
+>    "-f",
+>    "{connection_file}"
+>  ],
+>  "display_name": "Python 3 (ipykernel)",
+>  "language": "python",
+>  "metadata": {
+>   "debugger": true
+>  }
+> }
+
+Don't forget two backslashes within the path as separators. Leave the poetry-shell with 'exit' and restart with 'poetry shell'. It should work now. For more information, see the following issues:
+> https://github.com/jupyter/notebook/issues/4079
+> https://github.com/jupyter/notebook/issues/2301

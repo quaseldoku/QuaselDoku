@@ -29,16 +29,27 @@ authors = ["Leonard Lehmann, Tom Gothan, Alexander Zouhar"]
 license = "MIT-License"
 
 [tool.poetry.dependencies]
-python = "3.9.11"
+python = "3.8.2"
 numpy = "*"
 pandas = "*"
 scipy = "*"
 scikit-learn = "*"
 gensim = "*"
-mlflow = "*"
+black= "*"
+flake8= "*"
+ipython= "*"
+isort= "*"
+kedro-viz = "*"
 kedro = "*"
-jupyter = "*"
-jupyterlab = "*"
+jupyter= "*"
+jupyterlab= "*"
+kedro-telemetry= "*"
+nbstripout= "*"
+pytest-cov= "*"
+pytest-mock= "*"
+pytest= "*"
+mlflow = "*"
+beautifulsoup4 = "*"
 
 [tool.poetry.dev-dependencies]
 
