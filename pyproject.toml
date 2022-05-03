@@ -29,7 +29,7 @@ authors = ["Leonard Lehmann, Tom Gothan, Alexander Zouhar"]
 license = "MIT-License"
 
 [tool.poetry.dependencies]
-python = "3.9.11"
+python = "3.8.2"
 numpy = "*"
 pandas = "*"
 scipy = "*"
