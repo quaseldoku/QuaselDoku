@@ -2,3 +2,19 @@
 #
 # Documentation for this file format can be found in "The Data Catalog"
 # Link: https://kedro.readthedocs.io/en/stable/data/data_catalog.html
+
+ecu_test_doku:
+  type: PartitionedDataSet
+  path: ./data/01_raw/Doku_v1
+  dataset: text.TextDataSet
+  filename_suffix: html
+
+ecu_test_doku_flat_only_html:
+  type: PartitionedDataSet
+  path: ./data/02_intermediate/
+  dataset: text.TextDataSet
+  filename_suffix: html
+
+ecu_test_doku_parsed:
+  type: pandas.CSVDataSet
+  filepath: ./data/03_primary/doku_parsed.csv
