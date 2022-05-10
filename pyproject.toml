@@ -50,6 +50,8 @@ pytest-mock= "*"
 pytest= "*"
 mlflow = "*"
 beautifulsoup4 = "*"
+Whoosh = "^2.7.4"
+snowballstemmer = "^2.2.0"
 
 [tool.poetry.dev-dependencies]
 
