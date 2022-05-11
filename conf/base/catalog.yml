@@ -19,6 +19,6 @@ ecu_test_doku_parsed:
   type: pandas.CSVDataSet
   filepath: ./data/03_primary/doku_parsed.csv
 
-test_data:
+germanquad_validation:
   type: pandas.CSVDataSet
-  filepath: ./data/03_primary/test_data.csv
+  filepath: ./data/03_primary/germanquad/germanquad_val.csv
