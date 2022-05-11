@@ -50,6 +50,8 @@ pytest-mock= "*"
 pytest= "*"
 mlflow = "*"
 beautifulsoup4 = "*"
+transformers = {extras = ["torch"], version = "^4.18.0"}
+datasets = "^2.2.0"
 
 [tool.poetry.dev-dependencies]
 
