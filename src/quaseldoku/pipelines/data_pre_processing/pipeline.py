@@ -4,7 +4,7 @@ generated using Kedro 0.18.0
 """
 
 from kedro.pipeline import Pipeline, node, pipeline
-from .nodes import filter_doku, parse_html_and_combine
+from .nodes import filter_doku, parse_html_and_combine, download_germanquad
 
 
 def create_pipeline(**kwargs) -> Pipeline:
@@ -20,5 +20,11 @@ def create_pipeline(**kwargs) -> Pipeline:
                 inputs=["ecu_test_doku_flat_only_html", "params:preprocessing"],
                 outputs="ecu_test_doku_parsed",
                 name="parse_html_doku_to_csv"
+            ),
+            node(
+                func=download_germanquad,
+                inputs=["params:germanquad_load_script"],
+                outputs="germanquad_validation",
+                name="download_germanquad"
             )
     ])

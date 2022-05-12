@@ -5,6 +5,7 @@ generated using Kedro 0.18.0
 
 import pandas as pd
 import re
+import datasets
 
 from typing import Any, Callable, Dict
 from bs4 import BeautifulSoup
@@ -110,3 +111,18 @@ def parse_html_and_combine(partitioned_input: Dict[str, Callable[[], Any]], para
     df.columns = ['filename', 'title', 'sub_topics', 'body', 'links', 'imgs']
     
     return df
+
+
+def download_germanquad(path_to_load_script: str) -> pd.DataFrame:
+    """
+    loads the germanQuAD Dataset via huggingface 'datasets' module, 
+    extracts only the test split and converts it to pandas DataFrame
+
+    Args:
+        path_to_load_script: path where the germanquad load script is stored which is needed for downloading the dataset
+
+    Returns:
+        germanSQuAD test set as pandas DataFrame
+    """
+    germansquad = datasets.load_dataset(path_to_load_script)
+    return germansquad['test'].to_pandas()
