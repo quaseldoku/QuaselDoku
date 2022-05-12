@@ -41,6 +41,7 @@ def filter_doku(partitioned_input: Dict[str, Callable[[], Any]], params: Dict) -
 
 
 def parse_html(doc: str) -> list:
+    # TODO : DOKU
 
     # parse html
     parsed = BeautifulSoup(doc, 'html.parser')
@@ -98,7 +99,7 @@ def parse_html_and_combine(partitioned_input: Dict[str, Callable[[], Any]], para
         data = parse_html(partition_load_func())
 
         # append filename to beginning of list
-        filename = partition_key + 'html'
+        filename = partition_key # + 'html'
         data.insert(0, filename)
 
         # append to list of results
