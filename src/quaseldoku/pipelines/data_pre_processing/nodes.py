@@ -48,13 +48,15 @@ def get_body(soup_elem,liste_headlines,name):
     ordnen = []
     for h in liste_headlines:
         block = soup_elem.find("div",{"id":h.lower()})
-        elems = (block.findChildren(("p","ul","table"),recursive =False))
-        for elem in elems:
-            text = re.sub(" \n ", " ", elem.get_text().strip(), flags=re.M)
-            text = re.sub("\n ", " ", text.strip(), flags=re.M)
-            text = re.sub(" \n", " ", text.strip(), flags=re.M)
-            text =re.sub("\n", " ", text.strip(), flags=re.M)
-            ordnen.append((text, h, name, hash(h)))
+        childTag = block.find(("p","ul","table"),recursive = False)
+        if childTag:
+            elems = (block.findChildren(("p","ul","table"),recursive =False))
+            for elem in elems:
+                text = re.sub(" \n ", " ", elem.get_text().strip(), flags=re.M)
+                text = re.sub("\n ", " ", text.strip(), flags=re.M)
+                text = re.sub(" \n", " ", text.strip(), flags=re.M)
+                text =re.sub("\n", " ", text.strip(), flags=re.M)
+                ordnen.append((text, h, name, hash(h+name)))
     text_frame = pd.DataFrame(ordnen, columns = ["Text","Head","Link","Hash"])
     text_merge = text_frame.groupby(['Head',"Link","Hash"],sort=False)['Text'].apply(list)
     
@@ -66,7 +68,9 @@ def get_paraName(soup_elem, headline):
     for unterkap in soup_elem.find_all(headline):
         sauber = re.sub('\uf0c1','', unterkap.get_text())
         string = sauber.replace("("," ").replace(")","")
+        string = string.replace("„"," ").replace("“","")
         sauber = string.replace("?","")
+        sauber = sauber.replace("_"," ")
         sauber = re.sub('\W+',' ',sauber)
         sauber = re.sub('ü','u',sauber)
         sauber = re.sub('ä','a',sauber)
@@ -77,37 +81,65 @@ def get_paraName(soup_elem, headline):
         sauber = re.sub('ß','sz',sauber)
         sauber = re.sub('  ',' ',sauber)
         sauber = sauber.replace("ECU TEST","Produktname")
+
         # some headlines are to inconsistent to be changes by ordinary filters
         # therefore they get cleaned here
         sauber = sauber.replace("Job einreihen ", "job-einreihen-tsanalysisjob")
         sauber = sauber.replace("Traceschrittergebnis ubernehmen ", "traceschrittergebnis-ubernehmen-tstracestepresult")
         sauber = sauber.replace("Analyse anfordern ", "analyse-anfordern-tsrequestanalysis")
         
-        all_unter.append(re.sub(' ','-', sauber))
+        # irregular naming of a div block
+        sauber = sauber.replace("Statusleiste", "id1")
+        sauber= sauber.replace("cTestBed","id1")
+        sauber =sauber.replace("IDN","labcar-pincontrol-failuresim-fiu-idn")
+        # remove empty div block
+        sauber = sauber.replace('Produktname drive','')
+        sauber = sauber.replace("Nachtragliche Ausfuhrung von Analyse-Jobs","")
+        sauber = sauber.replace("Mehr zur Entstehung von Analyse-Jobs","")
+        # remove these two as they lead to tables or nothing _build/Tools/Software_Schnittstellen/...
+        sauber = sauber.replace("Eigenschaften ","")
+        sauber = sauber.replace("Jobs ","")
+
+        sauber = re.sub(' ','-', sauber)
+
+        sauber = sauber.replace("Port-IMAGE-Appium-","")
+        sauber = sauber.replace("Dokumentation-der-Analyse-im-Report","dokumentation-der-analyse-jobs-im-report")
+        sauber = sauber.replace("-Structure-With-Time","structure-with-time")
+        sauber = sauber.replace("Voraussetzungen-zur-Verwendung-von-MATLAB-mit-Produktname","voraussetzungen-zur-verwendung-von-matlab-mit-ecu-test")
+        
+        all_unter.append(sauber)
+    
     return all_unter
 
 # Changes: 
 #       - h1 and h2 headlines now get their own row
 #       - body is a List of String elements corresponding to html-Elements
-def parse_html(doc: str) -> list:
+def parse_html(doc: str,key) -> list:
     # TODO : DOKU
 
     # parse html
     parsed = BeautifulSoup(doc, 'html.parser')
-
+    
     # get title
-    name = doc
+    name=key   
     all_data = []
-    head_top = get_paraName(parsed, "h1")
-    print(head_top)
-    if head_top !=None:
-        h1 = get_body(parsed, head_top, name)
-        all_data.append(h1)
-    sub_top = get_paraName(parsed, "h2")
-    #print(sub_top)
-    if sub_top != None:
-        h2 = get_body(parsed, sub_top, name)
-        all_data.append(h2)
+    sub_top = get_paraName(parsed, ["h2","h3"])
+    
+    if name.find('_build_Tools_Software_Schnittstellen_')!=-1:
+        
+        if sub_top != None:
+            
+            h2 = get_body(parsed, sub_top, name)
+            all_data.append(h2)
+    else:
+        head_top = get_paraName(parsed, "h1")
+        
+        if head_top !=None:
+            h1 = get_body(parsed, head_top, name)
+            all_data.append(h1)
+        if sub_top != None:
+            h2 = get_body(parsed, sub_top, name)
+            all_data.append(h2)
     flat_list = list(itertools.chain(*all_data))
     # gather subtopics
     #sub_topics = []
@@ -156,16 +188,15 @@ def parse_html_and_combine(partitioned_input: Dict[str, Callable[[], Any]], para
         print(f'parsing file: {partition_key}')
 
         # parse doc
-        data = parse_html(partition_load_func())
+        data = parse_html(partition_load_func(), partition_key)
 
         # append filename to beginning of list
-        filename = partition_key # + 'html'
-        data.insert(0, filename)
+        #filename = partition_key # + 'html'
+        #data.insert(0, filename)
 
         # append to list of results
-        results.append(data)
-
+        results = [*results, *data]
     # convert into DataFrame
-    df = pd.DataFrame(results, columns = ["Title","Source","Hash","Text"])
+    df = pd.DataFrame(results,columns=["Title","Filename","Hash","Body"])
    
     return df
