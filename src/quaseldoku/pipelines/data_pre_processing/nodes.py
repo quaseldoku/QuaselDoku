@@ -58,6 +58,7 @@ def get_body(soup_elem,liste_headlines,name):
                 text =re.sub("\n", " ", text.strip(), flags=re.M)
                 ordnen.append((text, h, name, hash(h+name)))
     text_frame = pd.DataFrame(ordnen, columns = ["Text","Head","Link","Hash"])
+    text_frame = text_frame[text_frame.Text != '']
     text_merge = text_frame.groupby(['Head',"Link","Hash"],sort=False)['Text'].apply(list)
     
     final = text_merge.reset_index().values.tolist()
@@ -197,6 +198,7 @@ def parse_html_and_combine(partitioned_input: Dict[str, Callable[[], Any]], para
         # append to list of results
         results = [*results, *data]
     # convert into DataFrame
+    
     df = pd.DataFrame(results,columns=["Title","Filename","Hash","Body"])
-   
+    
     return df
