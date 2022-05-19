@@ -3,6 +3,7 @@ This is a boilerplate pipeline 'data_pre_processing'
 generated using Kedro 0.18.0
 """
 
+from unittest import skip
 import pandas as pd
 import re
 import itertools
@@ -30,10 +31,12 @@ def filter_doku(partitioned_input: Dict[str, Callable[[], Any]], params: Dict) -
     result = {}
 
     for partition_key, partition_load_func in sorted(partitioned_input.items()):
-
+        
         exclude = False
         for string in params['exclude_docs']:
+            
             if string in partition_key:
+                
                 exclude = True
                 break
 
@@ -201,9 +204,7 @@ def parse_html(doc: str, key: str) -> list:
     sub_top = get_para_name(parsed, ["h2", "h3"])
 
     if name.find('_build_Tools_Software_Schnittstellen_') != -1:
-        if sub_top != None:
-            h2 = get_body(parsed, sub_top, name)
-            all_data.append(h2)
+        skip
     else:
         head_top = get_para_name(parsed, "h1")
         if head_top != None:
