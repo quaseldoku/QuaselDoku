@@ -64,58 +64,58 @@ def get_para_name(soup_elem: BeautifulSoup, headline: list) -> list:
         list of cleaned strings describing the titles of the sections of the provided html document.
     """
 
-    all_unter = []
-    for unterkap in soup_elem.find_all(headline):
-        sauber = re.sub('\uf0c1', '', unterkap.get_text())
-        string = sauber.replace("(", " ").replace(")", "")
-        string = string.replace("„", " ").replace("“", "")
-        sauber = string.replace("?", "")
-        sauber = sauber.replace("_", " ")
-        sauber = re.sub('\W+', ' ', sauber)
-        sauber = re.sub('ü', 'u', sauber)
-        sauber = re.sub('ä', 'a', sauber)
-        sauber = re.sub('ö', 'o', sauber)
-        sauber = re.sub('Ü', 'U', sauber)
-        sauber = re.sub('Ä', 'A', sauber)
-        sauber = re.sub('Ö', 'O', sauber)
-        sauber = re.sub('ß', 'sz', sauber)
-        sauber = re.sub('  ', ' ', sauber)
-        sauber = sauber.replace("ECU TEST", "Produktname")
+    all_chap = []
+    for head in soup_elem.find_all(headline):
+        clean_text = re.sub('\uf0c1', '', head.get_text())
+        clean_text = clean_text.replace("(", " ").replace(")", "")
+        clean_text = clean_text.replace("„", " ").replace("“", "")
+        clean_text = clean_text.replace("?", "")
+        clean_text = clean_text.replace("_", " ")
+        clean_text = re.sub('\W+', ' ', clean_text)
+        clean_text = re.sub('ü', 'u', clean_text)
+        clean_text = re.sub('ä', 'a', clean_text)
+        clean_text = re.sub('ö', 'o', clean_text)
+        clean_text = re.sub('Ü', 'U', clean_text)
+        clean_text = re.sub('Ä', 'A', clean_text)
+        clean_text = re.sub('Ö', 'O', clean_text)
+        clean_text = re.sub('ß', 'sz', clean_text)
+        clean_text = re.sub('  ', ' ', clean_text)
+        clean_text = clean_text.replace("ECU TEST", "Produktname")
 
         # some headlines are too inconsistent to be changes by ordinary filters
         # therefore they get cleaned here
-        sauber = sauber.replace("Job einreihen ", "job-einreihen-tsanalysisjob")
-        sauber = sauber.replace("Traceschrittergebnis ubernehmen ",
+        clean_text = clean_text.replace("Job einreihen ", "job-einreihen-tsanalysisjob")
+        clean_text = clean_text.replace("Traceschrittergebnis ubernehmen ",
                                 "traceschrittergebnis-ubernehmen-tstracestepresult")
-        sauber = sauber.replace("Analyse anfordern ",
+        clean_text = clean_text.replace("Analyse anfordern ",
                                 "analyse-anfordern-tsrequestanalysis")
 
         # irregular naming of a div block
-        sauber = sauber.replace("Statusleiste", "id1")
-        sauber = sauber.replace("cTestBed", "id1")
-        sauber = sauber.replace("IDN", "labcar-pincontrol-failuresim-fiu-idn")
+        clean_text = clean_text.replace("Statusleiste", "id1")
+        clean_text = clean_text.replace("cTestBed", "id1")
+        clean_text = clean_text.replace("IDN", "labcar-pincontrol-failuresim-fiu-idn")
 
         # remove empty div block
-        sauber = sauber.replace('Produktname drive', '')
-        sauber = sauber.replace("Nachtragliche Ausfuhrung von Analyse-Jobs", "")
-        sauber = sauber.replace("Mehr zur Entstehung von Analyse-Jobs", "")
+        clean_text = clean_text.replace('Produktname drive', '')
+        clean_text = clean_text.replace("Nachtragliche Ausfuhrung von Analyse-Jobs", "")
+        clean_text = clean_text.replace("Mehr zur Entstehung von Analyse-Jobs", "")
 
         # remove these two as they lead to tables or nothing _build/Tools/Software_Schnittstellen/...
-        sauber = sauber.replace("Eigenschaften ", "")
-        sauber = sauber.replace("Jobs ", "")
+        clean_text = clean_text.replace("Eigenschaften ", "")
+        clean_text = clean_text.replace("Jobs ", "")
 
-        sauber = re.sub(' ', '-', sauber)
+        clean_text = re.sub(' ', '-', clean_text)
 
-        sauber = sauber.replace("Port-IMAGE-Appium-", "")
-        sauber = sauber.replace("Dokumentation-der-Analyse-im-Report",
+        clean_text = clean_text.replace("Port-IMAGE-Appium-", "")
+        clean_text = clean_text.replace("Dokumentation-der-Analyse-im-Report",
                                 "dokumentation-der-analyse-jobs-im-report")
-        sauber = sauber.replace("-Structure-With-Time", "structure-with-time")
-        sauber = sauber.replace("Voraussetzungen-zur-Verwendung-von-MATLAB-mit-Produktname",
+        clean_text = clean_text.replace("-Structure-With-Time", "structure-with-time")
+        clean_text = clean_text.replace("Voraussetzungen-zur-Verwendung-von-MATLAB-mit-Produktname",
                                 "voraussetzungen-zur-verwendung-von-matlab-mit-ecu-test")
 
-        all_unter.append(sauber)
+        all_chap.append(clean_text)
 
-    return all_unter
+    return all_chap
 
 
 def generate_hash_from_text(text: str) -> str:
