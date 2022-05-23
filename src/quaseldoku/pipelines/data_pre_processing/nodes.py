@@ -86,7 +86,7 @@ def get_para_name(soup_elem: BeautifulSoup, headline: list) -> list:
         # therefore they get cleaned here
         clean_text = clean_text.replace("Job einreihen ", "job-einreihen-tsanalysisjob")
         clean_text = clean_text.replace("Traceschrittergebnis ubernehmen ",
-                                "traceschrittergebnis-ubernehmen-tstracestepresult")
+                               "traceschrittergebnis-ubernehmen-tstracestepresult")
         clean_text = clean_text.replace("Analyse anfordern ",
                                 "analyse-anfordern-tsrequestanalysis")
 
@@ -97,21 +97,12 @@ def get_para_name(soup_elem: BeautifulSoup, headline: list) -> list:
 
         # remove empty div block
         clean_text = clean_text.replace('Produktname drive', '')
-        clean_text = clean_text.replace("Nachtragliche Ausfuhrung von Analyse-Jobs", "")
-        clean_text = clean_text.replace("Mehr zur Entstehung von Analyse-Jobs", "")
-
-        # remove these two as they lead to tables or nothing _build/Tools/Software_Schnittstellen/...
-        clean_text = clean_text.replace("Eigenschaften ", "")
-        clean_text = clean_text.replace("Jobs ", "")
 
         clean_text = re.sub(' ', '-', clean_text)
 
-        clean_text = clean_text.replace("Port-IMAGE-Appium-", "")
         clean_text = clean_text.replace("Dokumentation-der-Analyse-im-Report",
                                 "dokumentation-der-analyse-jobs-im-report")
         clean_text = clean_text.replace("-Structure-With-Time", "structure-with-time")
-        clean_text = clean_text.replace("Voraussetzungen-zur-Verwendung-von-MATLAB-mit-Produktname",
-                                "voraussetzungen-zur-verwendung-von-matlab-mit-ecu-test")
 
         all_chap.append(clean_text)
 
@@ -159,6 +150,9 @@ def get_body(soup_elem: BeautifulSoup, list_headlines: list, filename: str) -> p
         # gather all availabe text within this div block and concatenate
         text_elements = []
 
+        # re assemble filepath within doku folder structure
+        file_path = filename.replace('_', '/')
+
         if child_tags != None:
 
             for child in (block.findChildren(("p", "ul", "table"), recursive=False)):
@@ -167,18 +161,13 @@ def get_body(soup_elem: BeautifulSoup, list_headlines: list, filename: str) -> p
                 text = re.sub("\n ", " ", text.strip(), flags=re.M)
                 text = re.sub(" \n", " ", text.strip(), flags=re.M)
                 text = re.sub("\n", " ", text.strip(), flags=re.M)
+                if len(text) > 0:
+                    # concat all text elements to generate hash
+                    _text_concat = " ".join(text_elements)
+                    signature = generate_hash_from_text(_text_concat)
 
-                text_elements.append(text)
-
-        if len(text_elements) > 0:
-            # concat all text elements to generate hash
-            _text_concat = " ".join(text_elements)
-            signature = generate_hash_from_text(_text_concat)
-
-            # re assemble filepath within doku folder structure
-            file_path = filename.replace('_', '/')
-        
-            paragraphs.append([signature, h, file_path, text_elements])
+            
+                paragraphs.append([signature, h, file_path, text])
 
     return paragraphs
 
@@ -202,7 +191,6 @@ def parse_html(doc: str, key: str) -> list:
     name = key
     all_data = []
     sub_top = get_para_name(parsed, ["h2", "h3"])
-
     if name.find('_build_Tools_Software_Schnittstellen_') != -1:
         skip
     else:
