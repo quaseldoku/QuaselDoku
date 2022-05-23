@@ -156,18 +156,41 @@ def get_body(soup_elem: BeautifulSoup, list_headlines: list, filename: str) -> p
         if child_tags != None:
 
             for child in (block.findChildren(("p", "ul", "table"), recursive=False)):
+                # for list-elemnts check for bullet points just consisting of a link
+                if child.name == "ul":
+                    list_elem = child.findChildren("li")
+                    for elem in list_elem:
+                        link_text = elem.findChildren("a")
+                        
+                        if len(link_text):
+                            # if bullet point just contains link skip
+                            if elem.get_text() == link_text[0].get_text():
+                                list_text = ""
+                            # else add bullet point to text
+                            else:
+                                list_text = re.sub(" \n ", " ", elem.get_text().strip(), flags=re.M)
+                                list_text = re.sub("\n ", " ", list_text.strip(), flags=re.M)
+                                list_text = re.sub(" \n", " ", list_text.strip(), flags=re.M)
+                                list_text = re.sub("\n", " ", list_text.strip(), flags=re.M)
+                                text_elements.append(list_text)
+                    if len(text_elements) > 0:
+                        text = text_elements
+                        _text_concat = " ".join(text)
+                        signature = generate_hash_from_text(_text_concat)
+                        paragraphs.append([signature, h, file_path, text])
+                else: 
 
-                text = re.sub(" \n ", " ", child.get_text().strip(), flags=re.M)
-                text = re.sub("\n ", " ", text.strip(), flags=re.M)
-                text = re.sub(" \n", " ", text.strip(), flags=re.M)
-                text = re.sub("\n", " ", text.strip(), flags=re.M)
-                if len(text) > 0:
+                    text = re.sub(" \n ", " ", child.get_text().strip(), flags=re.M)
+                    text = re.sub("\n ", " ", text.strip(), flags=re.M)
+                    text = re.sub(" \n", " ", text.strip(), flags=re.M)
+                    text = re.sub("\n", " ", text.strip(), flags=re.M)
+                    if len(text) > 0:
                     # concat all text elements to generate hash
-                    _text_concat = " ".join(text_elements)
-                    signature = generate_hash_from_text(_text_concat)
+                        _text_concat = " ".join(text)
+                        signature = generate_hash_from_text(_text_concat)
 
             
-                paragraphs.append([signature, h, file_path, text])
+                        paragraphs.append([signature, h, file_path, text])
 
     return paragraphs
 
