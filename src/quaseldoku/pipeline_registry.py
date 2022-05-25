@@ -2,7 +2,7 @@
 from typing import Dict
 
 from kedro.pipeline import Pipeline, pipeline
-from quaseldoku.pipelines import data_pre_processing, load_test_data
+from quaseldoku.pipelines import data_pre_processing #, load_test_data
 
 
 def register_pipelines() -> Dict[str, Pipeline]:
@@ -17,5 +17,5 @@ def register_pipelines() -> Dict[str, Pipeline]:
     return {
          "__default__": data_pre_processing_pipeline,
         "dp": data_pre_processing_pipeline,
-        "test_data": load_test_data_pipeline 
+        #"test_data": load_test_data_pipeline 
     }

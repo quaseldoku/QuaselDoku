@@ -253,8 +253,7 @@ def parse_html_and_combine(partitioned_input: Dict[str, Callable[[], Any]], para
         results = [*results, *data]
 
     # convert into DataFrame
-    df = pd.DataFrame(results)
-    df.columns = ['filename', 'title', 'sub_topics', 'body', 'links', 'imgs']
+    df = pd.DataFrame(results, columns=["Hash", "Title", "Filename", "Body"])
     
     return df
 
