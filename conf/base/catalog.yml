@@ -23,3 +23,7 @@ germanquad_validation:
   type: pandas.CSVDataSet
   #filepath: ./data/03_primary/test_data.csv
   filepath: ./data/03_primary/germanquad/germanquad_val.csv
+
+pargraph_elements:
+  type: pandas.CSVDataSet
+  filepath: ./data/04_feature/paragraphs.csv

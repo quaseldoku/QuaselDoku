@@ -3,3 +3,5 @@ preprocessing:
 
 # location of laod script germanquad needs to be downloaded
 germanquad_load_script: "./src/quaseldoku/pipelines/data_pre_processing/germanquad/"
+
+ecu_parsed_load_script: "./data/03_primary/doku_parsed.csv"

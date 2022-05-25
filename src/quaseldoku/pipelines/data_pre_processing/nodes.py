@@ -154,9 +154,14 @@ def get_body(soup_elem: BeautifulSoup, list_headlines: list, filename: str) -> p
         # re assemble filepath within doku folder structure
         file_path = filename.replace('_', '/')
 
+        _text_concat = h+file_path
+        signature = generate_hash_from_text(_text_concat)
         if child_tags != None:
 
             for child in (block.findChildren(("p", "ul", "table"), recursive=False)):
+                
+               
+
                 # for list-elemnts check for bullet points just consisting of a link
                 if child.name == "ul":
                     list_elem = child.findChildren("li")
@@ -176,8 +181,8 @@ def get_body(soup_elem: BeautifulSoup, list_headlines: list, filename: str) -> p
                                 text_elements.append(list_text)
                     if len(text_elements) > 0:
                         text = text_elements
-                        _text_concat = " ".join(text)
-                        signature = generate_hash_from_text(_text_concat)
+                        #_text_concat = " ".join(text)
+                        #signature = generate_hash_from_text(_text_concat)
                         paragraphs.append([signature, h, file_path, text])
                 else: 
 
@@ -187,10 +192,6 @@ def get_body(soup_elem: BeautifulSoup, list_headlines: list, filename: str) -> p
                     text = re.sub("\n", " ", text.strip(), flags=re.M)
                     if len(text) > 0:
                     # concat all text elements to generate hash
-                        _text_concat = " ".join(text)
-                        signature = generate_hash_from_text(_text_concat)
-
-            
                         paragraphs.append([signature, h, file_path, text])
 
     return paragraphs
@@ -271,3 +272,21 @@ def download_germanquad(path_to_load_script: str) -> pd.DataFrame:
     """
     germansquad = datasets.load_dataset(path_to_load_script)
     return germansquad['test'].to_pandas()
+
+def blocks_to_paragraphs(path_to_load_block_elements: str) -> pd.DataFrame:
+    """
+    loads the ecu_test_doku_parsed Dataset, 
+    merges all elements with the same Hash, Title and Filename
+    body elements get joined via ' '
+
+    Args:
+        path_to_load_block_elements: path where the ecu_test_doku_parsed csv file 
+
+    Returns:
+        pandas DataFrame
+    """
+    # wasn't able to call dataframe.load on the ecu_test_doku_parsed Dataset.load() due to an error in my system (author: Luise)
+    block_elements = pd.read_csv(path_to_load_block_elements)
+    paragraphs = block_elements.groupby(['Hash','Title','Filename'],sort=False)['Body'].apply(' '.join).reset_index()
+
+    return paragraphs
