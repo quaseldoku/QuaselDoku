@@ -21,4 +21,5 @@ ecu_test_doku_parsed:
 
 test_data:
   type: pandas.CSVDataSet
-  filepath: ./data/03_primary/test_data.csv
+  #filepath: ./data/03_primary/test_data.csv
+  filepath: ./data/03_primary/germanquad/germanquad_val.csv

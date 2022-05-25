@@ -1,2 +1,5 @@
 preprocessing:
-  exclude_docs: ["index", "search"]
+  exclude_docs: ["index", "search"] 
+
+# location of laod script germanquad needs to be downloaded
+germanquad_load_script: "./src/quaseldoku/pipelines/load_test_data/germanquad/"
