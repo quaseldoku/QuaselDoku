@@ -3,3 +3,9 @@ preprocessing:
 
 # location of laod script germanquad needs to be downloaded
 germanquad_load_script: "./src/quaseldoku/pipelines/data_pre_processing/germanquad/"
+
+# location of doku search index (for keyword search)
+doku_search_index: "./data/03_primary/search_indices/ecu_test/"
+
+# location of germany quad index (for keyword search)
+germanquad_search_index: "./data/03_primary/search_indices/germanquad/"
