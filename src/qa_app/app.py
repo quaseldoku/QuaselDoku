@@ -5,6 +5,9 @@ def answer_question(question):
 
     # define color of highlighted answer text within context
     h_color = "#8ef"
+    
+    # base link to doku (will be either to web server running doku or local file)
+    _base_link = "http://127.0.0.1:5000/"
 
     # run question through model(s) and render results
     # BERT gives some words as answer
@@ -27,19 +30,24 @@ def answer_question(question):
     Testbewertung dieses geglätteten Signals vornehmen. 
     '''
 
-    # get title of paragraph
-    _title = "Signalverarbeitung mit Traceschritten"
-
     # get link to paragraph
     #_link = "file:///mnt/Data/Studium/tracetronic/QuaselDoku/data/01_raw/Doku_v1/TRACE-CHECK/Handbuch/Traceanalyse-Entwurf/Signalverarbeitung_mit_Traceschritten.html"
-    _link = " http://127.0.0.1:5000/TRACE-CHECK/Handbuch/Traceanalyse-Entwurf/Signalverarbeitung_mit_Traceschritten.html"
+    _link = _base_link + "TRACE-CHECK/Handbuch/Traceanalyse-Entwurf/Signalverarbeitung_mit_Traceschritten.html"
+
+    # get title of paragraph
+    _title = "Signalverarbeitung-mit-Traceschritten"
+
+    # append title to link to show correct paragraph
+    _link += f'#{_title.lower()}'
+    print(_link)
+
+    # format title for display later
+    _title_display = _title.replace('-', ' ')
 
     # manipulate link so answer is also highlighted in doku
     # _link = f'{_link}?highlight={_bert_answer}'
     # _link = _link.replace('\n', ' ')
     # _link = _link.replace(' ', '%20')
-
-    print(_link)
 
     # find answer in context in order to highlight substring
     _answer_start = _context.find(_bert_answer)
@@ -58,7 +66,7 @@ def answer_question(question):
         _c_sffx
     )
 
-    return _bert_answer, _title, _link
+    return _bert_answer, _title_display, _link
 
 if __name__ == "__main__":
 
