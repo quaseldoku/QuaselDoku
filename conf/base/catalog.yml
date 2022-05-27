@@ -11,9 +11,8 @@ ecu_test_doku:
 
 ecu_test_doku_flat_only_html:
   type: PartitionedDataSet
-  path: ./data/doku_flat/02_intermediate/
+  path: ./data/02_intermediate/doku_flat
   dataset: text.TextDataSet
-  filename_suffix: html
 
 ecu_test_doku_parsed:
   type: pandas.CSVDataSet
@@ -26,3 +25,7 @@ germanquad_validation:
 german_stopwords:
   type: pandas.CSVDataSet
   filepath: ./data/00_supplementary/stopwords.csv
+
+paragraph_elements:
+  type: pandas.CSVDataSet
+  filepath: ./data/04_feature/paragraphs.csv
