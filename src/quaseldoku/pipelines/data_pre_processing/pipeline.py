@@ -29,7 +29,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             ),
             node(
                 func=blocks_to_paragraphs,
-                inputs= ["params:ecu_parsed_load_script"],
+                inputs= ["ecu_test_doku_parsed"],
                 outputs="pargraph_elements",
                 name= "parsed_paragraphs"
             )
