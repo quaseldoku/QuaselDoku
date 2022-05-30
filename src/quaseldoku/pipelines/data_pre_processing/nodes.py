@@ -3,6 +3,7 @@ This is a boilerplate pipeline 'data_pre_processing'
 generated using Kedro 0.18.0
 """
 
+from gettext import find
 from unittest import skip
 import pandas as pd
 import re
@@ -10,14 +11,12 @@ import datasets
 import itertools
 import hashlib
 import base64
+import os
 
-from whoosh.index import create_in
-from whoosh.analysis import StemFilter, RegexTokenizer, LowercaseFilter, StopFilter
-from whoosh.fields import Schema, TEXT, ID
-
-from pathlib import Path
 from typing import Any, Callable, Dict
 from bs4 import BeautifulSoup
+from tqdm import tqdm
+from quaseldoku.helper import find_project_root
 
 
 def filter_doku(partitioned_input: Dict[str, Callable[[], Any]], params: Dict) -> Dict[str, Callable[[], Any]]:
@@ -34,9 +33,8 @@ def filter_doku(partitioned_input: Dict[str, Callable[[], Any]], params: Dict) -
 
     result = {}
 
-    for partition_key, partition_load_func in sorted(partitioned_input.items()):
-
-        print(partition_key)
+    print("filtering out relevant html files from doku ...")
+    for partition_key, partition_load_func in tqdm(sorted(partitioned_input.items())):
         
         exclude = False
         for string in params['exclude_docs']:
@@ -245,9 +243,8 @@ def parse_html_and_combine(partitioned_input: Dict[str, Callable[[], Any]], para
 
     results = []
 
-    for partition_key, partition_load_func in sorted(partitioned_input.items()):
-
-        print(f'parsing file: {partition_key}')
+    print('parsing html files ...')
+    for partition_key, partition_load_func in tqdm(sorted(partitioned_input.items())):
 
         # parse doc
         data = parse_html(partition_load_func(), partition_key)
@@ -276,7 +273,8 @@ def download_germanquad(path_to_load_script: str) -> pd.DataFrame:
     """
 
     # load and convert dataset
-    germansquad = datasets.load_dataset(path_to_load_script)
+    path_to_load_script_abs = find_project_root(os.getcwd()) + '/' + path_to_load_script
+    germansquad = datasets.load_dataset(path_to_load_script_abs)
 
     # convert to dict before converting to DataFrame (made parsing easier)
     germansquad_dict = germansquad['test'].to_dict()
@@ -291,52 +289,6 @@ def download_germanquad(path_to_load_script: str) -> pd.DataFrame:
     germansquad_df['Hash'] = germansquad_df['Body'].apply(lambda x: generate_hash_from_text(x))
 
     return germansquad_df
-
-
-def create_document_index(documents: pd.DataFrame, stopwords: list, indexdir_path: str):
-    '''
-    Creates a searchable index for a bunch of documents that need too be rows of a pandas DataFrame. 
-    The DataFrame also needs at least on column containing a document identifier (hash) called 'Hash',
-    as well as a column named 'Body' containing the text body of the document.
-    It uses the library woosh to do so that provides handy functions for formatting the documents text bodies before indexing them;
-    namely removing punctuation, stop words, lower case conversion as well as stemming.
-    It saves the index back to disk at a given location. This location needs to be referenced later when querying the index.
-    The content itself is not stored only the id and the indexed text body.
-    So in order to retrieve the original document after a query, the document must be linked by its hash. 
-
-    Args:
-        documents: pd.DataFrame containing text documents
-        indexdir_path: location where index will be saved to
-        stoplist: DataFrame with column 'words' containing words which will be removed when parsing a text body
-    '''
-
-    # parse stoplist from DataFrame to list  
-    stoplist = stopwords['words'].values.tolist()  
-
-    # define analyzer
-    custom_analyzer = RegexTokenizer() | LowercaseFilter() | StopFilter(stoplist=stoplist) | StemFilter(lang="de")
-
-    # create Schema for indexing documents
-    schema = Schema(
-        id=ID(stored=True),
-        content=TEXT(analyzer=custom_analyzer), # indexed content
-    )
-
-    # create dir for storing indexing results
-    Path(indexdir_path).mkdir(parents=True, exist_ok=True)
-    
-    # Creating a index writer to add document as per schema
-    ix = create_in(indexdir_path, schema)
-    writer = ix.writer()
-
-    # add every document to index
-    for _, row in documents.iterrows():
-        id = row['Hash']
-        text = row['Body']
-        writer.add_document(id=id, content=text)
-
-    # save index back to file
-    writer.commit()
 
 
 def blocks_to_paragraphs(load_block_elements: pd.DataFrame) -> pd.DataFrame:

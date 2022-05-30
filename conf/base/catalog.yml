@@ -5,27 +5,32 @@
 
 ecu_test_doku:
   type: PartitionedDataSet
-  path: ./data/01_raw/Doku_v1
+  path: data/01_raw/Doku_v1
   dataset: text.TextDataSet
   filename_suffix: html
 
 ecu_test_doku_flat_only_html:
   type: PartitionedDataSet
-  path: ./data/02_intermediate/doku_flat
+  path: data/02_intermediate/doku_flat
   dataset: text.TextDataSet
 
 ecu_test_doku_parsed:
   type: pandas.CSVDataSet
-  filepath: ./data/03_primary/doku_parsed.csv
+  filepath: data/03_primary/doku_parsed.csv
 
 germanquad_validation:
   type: pandas.CSVDataSet
-  filepath: ./data/03_primary/germanquad_val.csv
+  filepath: data/03_primary/germanquad_val.csv
 
-german_stopwords:
+ecu_test_doku_validation:
   type: pandas.CSVDataSet
-  filepath: ./data/00_supplementary/stopwords.csv
+  filepath: data/03_primary/doku_val.csv
 
 paragraph_elements:
   type: pandas.CSVDataSet
-  filepath: ./data/04_feature/paragraphs.csv
+  filepath: data/04_feature/paragraphs.csv
+
+test_results:
+  type: pandas.CSVDataSet
+  filepath: data/08_reporting/test_results.csv
+  
