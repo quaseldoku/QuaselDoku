@@ -112,7 +112,7 @@ def answer_question(question, document_base, dummy=False):
 
 if __name__ == "__main__":
 
-    document_base = load_document_base(find_project_root(os.getcwd()) + '/data/04_feature/paragraphs.csv')
+    document_base = load_document_base(find_project_root(os.getcwd()) + '/data/03_primary/doku_paragraphs.csv')
     # st.dataframe(document_base)
 
     st.markdown('# ECU-Test-Doku Q&A-System')

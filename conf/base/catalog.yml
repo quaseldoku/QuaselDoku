@@ -26,9 +26,9 @@ ecu_test_doku_validation:
   type: pandas.CSVDataSet
   filepath: data/03_primary/doku_val.csv
 
-paragraph_elements:
+ecu_test_doku_paragraphs:
   type: pandas.CSVDataSet
-  filepath: data/04_feature/paragraphs.csv
+  filepath: data/03_primary/doku_paragraphs.csv
 
 test_results:
   type: pandas.CSVDataSet

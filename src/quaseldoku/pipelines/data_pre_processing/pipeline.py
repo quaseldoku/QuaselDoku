@@ -24,7 +24,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             node(
                 func=blocks_to_paragraphs,
                 inputs="ecu_test_doku_parsed",
-                outputs="paragraph_elements",
+                outputs="ecu_test_doku_paragraphs",
                 name="parse_paragraphs"
             ),
             node(
@@ -36,7 +36,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             node(
                 func=keyword_search.create_document_index,
                 inputs=[
-                    "paragraph_elements",
+                    "ecu_test_doku_paragraphs",
                     "params:doku_search_index"],
                 outputs=None,
                 name="index_ecu_test_doku"
