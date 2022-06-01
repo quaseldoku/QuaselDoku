@@ -5,7 +5,7 @@ generated using Kedro 0.18.0
 
 from kedro.pipeline import Pipeline, node, pipeline
 from .nodes import filter_doku, parse_html_and_combine, download_germanquad, blocks_to_paragraphs
-from quaseldoku.qa_methods import keyword_search
+from quaseldoku.qa_methods import keyword_search, word_embeddings
 
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline([
@@ -49,4 +49,22 @@ def create_pipeline(**kwargs) -> Pipeline:
                 outputs=None,
                 name="index_germanquad"
             ),
+            node(
+                func=word_embeddings.load_model_from_hub,
+                inputs="params:models.sentence_transformer",
+                outputs="sentence_transformer_model",
+                name="load_sentence_transformer_model"
+            ),
+            node(
+                func=word_embeddings.create_document_embeddings,
+                inputs=["ecu_test_doku_paragraphs", "sentence_transformer_model"],
+                outputs="ecu_test_paragraph_embeddings",
+                name="create_ecu_paragraph_embeddings"
+            ),
+            node(
+                func=word_embeddings.create_document_embeddings,
+                inputs=["germanquad_validation", "sentence_transformer_model"],
+                outputs="germanquad_paragraph_embeddings",
+                name="create_germanquad_paragraph_embeddings"
+            )
     ])

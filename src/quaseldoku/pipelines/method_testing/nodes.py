@@ -5,8 +5,10 @@ generated using Kedro 0.18.0
 
 from typing import Dict
 import pandas as pd
+from torch import embedding
 from tqdm import tqdm
-from quaseldoku.qa_methods import keyword_search
+from quaseldoku.qa_methods import keyword_search, word_embeddings
+from sentence_transformers import SentenceTransformer
 
 
 def prepare_questions(dataset: pd.DataFrame) -> list:
@@ -51,6 +53,27 @@ def use_keyword_search(
     return results_df
 
 
+def use_semantic_search(queries: list, embeddings: pd.DataFrame, model: SentenceTransformer) -> pd.DataFrame:
+
+    print(f'applying semantic search on {len(queries)} questions ...')
+    search_results = word_embeddings.semantic_search(queries, embeddings, model)
+    
+    # re-assemble questions with answers (hashes)
+    results = []
+    for question, res in zip(queries, search_results):
+        resulting_hashes = []
+        for context in res:
+            idx = context['corpus_id']
+            # get hash by index
+            resulting_hashes.append(embeddings.iloc[idx]['Hash'])
+        results.append([resulting_hashes, question])
+
+    # convert to DataFrame and return
+    results_df = pd.DataFrame(results)
+    results_df.columns = ['Results', 'Question']
+    return results_df
+
+
 def calc_top_n_score(keyword_results: pd.DataFrame, dataset: pd.DataFrame) -> Dict:
 
     # calc top n score for following n's
@@ -82,18 +105,20 @@ def calc_top_n_score(keyword_results: pd.DataFrame, dataset: pd.DataFrame) -> Di
     return accuracies
 
 
-def log_metrics(top_n_ecu: Dict, top_n_germanquad: Dict) -> pd.DataFrame:
+def log_metrics(top_n_ecu: Dict, top_n_germanquad: Dict, top_n_ecu_semantic: Dict, top_n_germanquad_semantic) -> pd.DataFrame:
 
     # round values
-    for metric in [top_n_ecu, top_n_germanquad]:
+    for metric in [top_n_ecu, top_n_germanquad, top_n_ecu_semantic, top_n_germanquad_semantic]:
         for n in metric.keys():
             metric[n] = round(metric[n], 3)
 
     # append name of dataset
-    top_n_ecu['dataset'] = 'ecu_test_doku'
-    top_n_germanquad['dataset'] = 'germanquad'
-    
+    top_n_ecu['dataset'] = 'keyword:ecu_test_doku'
+    top_n_germanquad['dataset'] = 'keyword:germanquad'    
+    top_n_ecu_semantic['dataset'] = 'semantic:ecu_test_doku'
+    top_n_germanquad_semantic['dataset'] = 'semantic:germanquad'
+
     # convert to DataFrame and reverse column order
-    df = pd.DataFrame([top_n_ecu, top_n_germanquad])
+    df = pd.DataFrame([top_n_ecu, top_n_germanquad, top_n_ecu_semantic, top_n_germanquad_semantic])
     return df[df.columns[::-1]]
 

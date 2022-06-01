@@ -34,3 +34,15 @@ test_results:
   type: pandas.CSVDataSet
   filepath: data/08_reporting/test_results.csv
   
+sentence_transformer_model:
+  type: pickle.PickleDataSet
+  filepath: data/06_models/msmarco-distilbert-base-v4.pkl
+  backend: pickle
+
+ecu_test_paragraph_embeddings:
+  type: pandas.CSVDataSet
+  filepath: data/03_primary/ecu_test_paragraph_embeddings.csv
+
+germanquad_paragraph_embeddings:
+  type: pandas.CSVDataSet
+  filepath: data/03_primary/germanquad_paragraph_embeddings.csv

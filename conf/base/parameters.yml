@@ -9,3 +9,6 @@ doku_search_index: "data/03_primary/search_indices/ecu_test/"
 
 # location of germany quad index (for keyword search)
 germanquad_search_index: "data/03_primary/search_indices/germanquad/"
+
+models:   
+  sentence_transformer: "sentence-transformers/msmarco-distilbert-base-tas-b"
