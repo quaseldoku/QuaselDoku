@@ -6,12 +6,47 @@ import pandas as pd
 from annotated_text import annotated_text
 from quaseldoku.qa_methods import keyword_search
 from quaseldoku.helper import find_project_root
-
+from transformers import pipeline
 
 @st.cache
 def load_document_base(path):
     return pd.read_csv(path)
 
+qa_pipeline = pipeline(
+    "question-answering",
+    model="deutsche-telekom/bert-multi-english-german-squad2",
+    tokenizer="deutsche-telekom/bert-multi-english-german-squad2",
+)
+
+
+# funktion um antwort von bert model zuerstellen 
+def bert_answer_question(question: str, paragraph: str):
+    input = {
+        "question": question,
+        "context": paragraph
+    }
+    return qa_pipeline(input)
+#funktion die mir den maximalen Score von den drei antworten gibt
+def maximum(a, b, c):
+  
+    if (a >= b) and (a >= c):
+        largest = a
+    elif (b >= a) and (b >= c):
+        largest = b
+    else:
+        largest = c
+    dic = {'score': largest}      
+    return dic
+
+# Funktion um die restlichen Daten vom maximalen score auszugeben, sodass man passende antwort ausgibt
+def find_finale_result(a, b, c, d):
+    if (a["score"] == b["score"]):
+        finale_output = b
+    elif (a["score"] == c["score"]):
+        finale_output = c
+    else:
+        finale_output = d
+    return finale_output
 
 def answer_question(question, document_base, dummy=False):
 
@@ -63,14 +98,42 @@ def answer_question(question, document_base, dummy=False):
             st.markdown("*Keine Ergebnisse zu der Suchanfrage gefunden* 😔")
             return
         best_res_hash = key_word_res['hits'][0]
+        #hash für die anderen Ergebnisse
+        second_res_hash = key_word_res['hits'][1]
+        third_res_hash = key_word_res['hits'][2] 
+       
 
         # with retrieved hash look up context, title, etc. in document base
         row = document_base.loc[document_base['Hash'] == best_res_hash].values[0]
-        print(row)
+        row1 = document_base.loc[document_base['Hash'] == second_res_hash].values[0]
+        row2 = document_base.loc[document_base['Hash'] == third_res_hash].values[0]
 
-        _title = row[1]
-        _link = _base_link + row[2]
-        _context = row[3]
+        # getting all the context from the first 3 result of the key search
+        contexts = row[3]
+        contexts1 = row1[3]
+        contexts2 = row2[3]
+   
+        # context of best 3 goes into bert to find answer
+        output = bert_answer_question(question,contexts )
+        output1 = bert_answer_question(question, contexts1)
+        output2 = bert_answer_question(question, contexts2)
+        
+        # output of bert get the hash value
+        output["hash"] = best_res_hash
+        output1["hash"] = second_res_hash
+        output2["hash"] = third_res_hash
+  
+        #output_bert = bert_answer_question(question,row[3])
+        max_score = maximum(output["score"], output1["score"], output2["score"])
+
+        fin_result = find_finale_result(max_score,output,output1,output2)
+
+        fin_row = document_base.loc[document_base['Hash'] == fin_result["hash"]].values[0]
+        _title = fin_row[1]
+        _link = _base_link + fin_row[2]
+        _context = fin_result['answer'] 
+        _text = fin_row[3]
+        _score = fin_result['score']
         print(_link, _title)
 
 
@@ -87,12 +150,12 @@ def answer_question(question, document_base, dummy=False):
     # _link = _link.replace(' ', '%20')
 
     # find answer in context in order to highlight substring
-    _answer_start = _context.find(_bert_answer)
-    _answer_end = _answer_start + len(_bert_answer)
+    _answer_start = _text.find(_context)
+    _answer_end = _answer_start + len(_context)
 
     # highlight answer in context
-    _c_prfx = _context[:_answer_start] 
-    _c_sffx = _context[_answer_end:]
+    _c_prfx = _text[:_answer_start] 
+    _c_sffx = _text[_answer_end:]
 
     # show title as header
     # st.markdown(f'#### {_title}')
@@ -105,6 +168,10 @@ def answer_question(question, document_base, dummy=False):
         )
     else:
         st.markdown(_context)
+        annotated_text(
+            _c_prfx,
+            (_context, str(_score), h_color),
+            _c_sffx)
 
     st.markdown("***")
     st.markdown(f'**🔗 Lies mehr dazu im Kapitel [{_title_display}]({_link})**')
