@@ -26,27 +26,6 @@ def bert_answer_question(question: str, paragraph: str):
         "context": paragraph
     }
     return qa_pipeline(input)
-#funktion die mir den maximalen Score von den drei antworten gibt
-def maximum(a, b, c):
-  
-    if (a >= b) and (a >= c):
-        largest = a
-    elif (b >= a) and (b >= c):
-        largest = b
-    else:
-        largest = c
-    dic = {'score': largest}      
-    return dic
-
-# Funktion um die restlichen Daten vom maximalen score auszugeben, sodass man passende antwort ausgibt
-def find_finale_result(a, b, c, d):
-    if (a["score"] == b["score"]):
-        finale_output = b
-    elif (a["score"] == c["score"]):
-        finale_output = c
-    else:
-        finale_output = d
-    return finale_output
 
 def answer_question(question, document_base, dummy=False):
 
@@ -122,18 +101,17 @@ def answer_question(question, document_base, dummy=False):
         output["hash"] = best_res_hash
         output1["hash"] = second_res_hash
         output2["hash"] = third_res_hash
-  
-        #output_bert = bert_answer_question(question,row[3])
-        max_score = maximum(output["score"], output1["score"], output2["score"])
 
-        fin_result = find_finale_result(max_score,output,output1,output2)
+        outputs =[output, output1, output2]
+        # finding best score in list of the 3 outputs
+        max_score = max(outputs, key=lambda x: x['score'])
 
-        fin_row = document_base.loc[document_base['Hash'] == fin_result["hash"]].values[0]
+        fin_row = document_base.loc[document_base['Hash'] == max_score["hash"]].values[0]
         _title = fin_row[1]
         _link = _base_link + fin_row[2]
-        _context = fin_result['answer'] 
+        _context = max_score['answer'] 
         _text = fin_row[3]
-        _score = fin_result['score']
+        _score = max_score['score']
         print(_link, _title)
 
 
