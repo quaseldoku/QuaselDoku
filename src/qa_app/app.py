@@ -1,164 +1,120 @@
-from importlib.resources import path
 import os
-from pydoc import doc
 import streamlit as st
 import pandas as pd
+import nltk
 from annotated_text import annotated_text
 from quaseldoku.qa_methods import keyword_search
 from quaseldoku.helper import find_project_root
 from transformers import pipeline
 
+
 @st.cache
 def load_document_base(path):
     return pd.read_csv(path)
 
-qa_pipeline = pipeline(
-    "question-answering",
-    model="deutsche-telekom/bert-multi-english-german-squad2",
-    tokenizer="deutsche-telekom/bert-multi-english-german-squad2",
-)
+
+@st.experimental_singleton(show_spinner=True)
+def init_pipeline():
+    print('init pipeline')
+    return pipeline(
+        "question-answering",
+        model="deutsche-telekom/bert-multi-english-german-squad2",
+        tokenizer="deutsche-telekom/bert-multi-english-german-squad2",
+    )
 
 
-# funktion um antwort von bert model zuerstellen 
-def bert_answer_question(question: str, paragraph: str):
-    input = {
-        "question": question,
-        "context": paragraph
-    }
-    return qa_pipeline(input)
+@st.cache
+def init_nltk():
+    nltk.download('punkt')
 
-def answer_question(question, document_base, dummy=False):
 
-    # define color of highlighted answer text within context
-    h_color = "#8ef"
+def bert_answer_question(question, paragraph, qa_pipeline, top_k=3):
+    return qa_pipeline(question=question, context=paragraph, top_k=top_k)
+
+
+@st.experimental_memo(show_spinner=False)
+def answer_question(question, document_base, search_n_best=3):
+
+    qa_pipeline = init_pipeline()
+
+    # perform keyword search on ecu test index and retrieve best result
+    ecu_search_index = find_project_root(os.getcwd()) + '/data/03_primary/search_indices/ecu_test/'
+    key_word_res = keyword_search.query(question, ecu_search_index)
+    if len(key_word_res['hits']) < 1:
+        return []
     
+    n_best_hashes = key_word_res['hits'][:search_n_best]
+    
+    # with retrieved hash look up context, title, etc. in document base
+    best_documents = document_base[document_base['Hash'].isin(n_best_hashes)]
+
+    possible_answers = []
+    with st.spinner('asking BERT ...'):
+        # running text bodies of best n documents through bert model and merge results with document
+        for _, row in best_documents.iterrows():
+            bert_answers = bert_answer_question(question, row['Body'], qa_pipeline, top_k=3)
+            for ba in bert_answers:
+                possible_answers.append({**row, **ba})
+                
+    return sorted(possible_answers, key=lambda x: x['score'], reverse=True)
+
+
+def render_answer(answer):
+
     # base link to doku (will be either to web server running doku or local file)
     _base_link = "http://127.0.0.1:5000/"
 
-    if dummy:
-        # run question through model(s) and render results
-        # BERT gives some words as answer
-        _bert_answer = '''
-        Traceschritte übernehmen die wesentlichen Aufgaben der Signalverarbeitung. 
-        Über die reinen Signalbewertungen hinaus können Traceschritte aber auch Signalberechnungen vornehmen.'''
+    h_color = "#8ef"
 
-        # get score of answer
-        _score = 0.73
-
-        # get context where answer is located in
-        _context = '''
-        Traceschritte übernehmen die wesentlichen Aufgaben der Signalverarbeitung. 
-        Über die reinen Signalbewertungen hinaus können Traceschritte aber auch Signalberechnungen vornehmen.
-        Auf diese Weise können anderen Traceschritten, die in der selben Traceanalyse zum Einsatz kommen, 
-        zusätzliche Signale zur Verfügung gestellt werden. Dadurch gelingt es, 
-        Traceanalysen modular zu gestalten und in Teilen wiederzuverwenden. 
-        So kann beispielsweise ausgehend von einem vorhandenen Signal zunächst ein Traceschritt 
-        eine geglättete Variante dieses Signals berechnen und ein zweiter Traceschritt kann dann eine 
-        Testbewertung dieses geglätteten Signals vornehmen. 
-        '''
-       
-        # get link to paragraph
-        #_link = "file:///mnt/Data/Studium/tracetronic/QuaselDoku/data/01_raw/Doku_v1/TRACE-CHECK/Handbuch/Traceanalyse-Entwurf/Signalverarbeitung_mit_Traceschritten.html"
-        _link = _base_link + "TRACE-CHECK/Handbuch/Traceanalyse-Entwurf/Signalverarbeitung_mit_Traceschritten.html"
-
-        # get title of paragraph
-        _title = "Signalverarbeitung-mit-Traceschritten"
-
-    else:
-
-        # still dummies since only keyword search is tested
-        _bert_answer = ''
-        _score = ''
-
-        # perform keyword search on ecu test index and retrieve best result
-        ecu_search_index = find_project_root(os.getcwd()) + '/data/03_primary/search_indices/ecu_test/'
-        key_word_res = keyword_search.query(question, ecu_search_index)
-        if len(key_word_res['hits']) < 1:
-            st.markdown("*Keine Ergebnisse zu der Suchanfrage gefunden* 😔")
-            return
-        best_res_hash = key_word_res['hits'][0]
-        #hash für die anderen Ergebnisse
-        second_res_hash = key_word_res['hits'][1]
-        third_res_hash = key_word_res['hits'][2] 
-       
-
-        # with retrieved hash look up context, title, etc. in document base
-        row = document_base.loc[document_base['Hash'] == best_res_hash].values[0]
-        row1 = document_base.loc[document_base['Hash'] == second_res_hash].values[0]
-        row2 = document_base.loc[document_base['Hash'] == third_res_hash].values[0]
-
-        # getting all the context from the first 3 result of the key search
-        contexts = row[3]
-        contexts1 = row1[3]
-        contexts2 = row2[3]
-   
-        # context of best 3 goes into bert to find answer
-        output = bert_answer_question(question,contexts )
-        output1 = bert_answer_question(question, contexts1)
-        output2 = bert_answer_question(question, contexts2)
-        
-        # output of bert get the hash value
-        output["hash"] = best_res_hash
-        output1["hash"] = second_res_hash
-        output2["hash"] = third_res_hash
-
-        outputs =[output, output1, output2]
-        # finding best score in list of the 3 outputs
-        max_score = max(outputs, key=lambda x: x['score'])
-
-        fin_row = document_base.loc[document_base['Hash'] == max_score["hash"]].values[0]
-        _title = fin_row[1]
-        _link = _base_link + fin_row[2]
-        _context = max_score['answer'] 
-        _text = fin_row[3]
-        _score = max_score['score']
-        print(_link, _title)
-
+    title = answer['Title']
+    link = _base_link + answer['Filename']
+    text = answer['Body']
+    bert_answer = answer['answer']
+    score = round(answer['score'], 2)
 
     # append title to link to show correct paragraph
-    _link += f'#{_title.lower()}'
-    print(_link)
+    link += f'#{title.lower()}'
 
     # format title for display later
-    _title_display = _title.replace('-', ' ')
-
-    # manipulate link so answer is also highlighted in doku
-    # _link = f'{_link}?highlight={_bert_answer}'
-    # _link = _link.replace('\n', ' ')
-    # _link = _link.replace(' ', '%20')
+    title_display = title.replace('-', ' ')
 
     # find answer in context in order to highlight substring
-    _answer_start = _text.find(_context)
-    _answer_end = _answer_start + len(_context)
+    answer_start = text.find(bert_answer)
+    answer_end = answer_start + len(bert_answer)
 
     # highlight answer in context
-    _c_prfx = _text[:_answer_start] 
-    _c_sffx = _text[_answer_end:]
+    _c_prfx = text[:answer_start] 
+    _c_sffx = text[answer_end:]
 
-    # show title as header
-    # st.markdown(f'#### {_title}')
+    # show sentence containing the bert answer
+    sentences = nltk.sent_tokenize(text, language='german')
 
-    if dummy:
-        annotated_text(
-            _c_prfx,
-            (_bert_answer, str(_score), h_color),
-            _c_sffx
-        )
-    else:
-        st.markdown(_context)
-        annotated_text(
-            _c_prfx,
-            (_context, str(_score), h_color),
-            _c_sffx)
+    # find sentence containing start token
+    token_count = 0
+    start_token = answer['start']
+    answer_sentence = ''
+    for s in sentences:
+        token_count += len(s)
+        if token_count >= start_token:
+            answer_sentence = s
+            break
+
+    st.markdown(f'**{answer_sentence}**')
+    st.button('nicht die richtige Antwort?')
+
+    annotated_text(
+    _c_prfx,
+    (bert_answer, str(score), h_color),
+    _c_sffx)
 
     st.markdown("***")
-    st.markdown(f'**🔗 Lies mehr dazu im Kapitel [{_title_display}]({_link})**')
+    st.markdown(f'**🔗 Lies mehr dazu im Kapitel [{title_display}]({link})**')
 
 
 if __name__ == "__main__":
 
     document_base = load_document_base(find_project_root(os.getcwd()) + '/data/03_primary/doku_paragraphs.csv')
-    # st.dataframe(document_base)
+    init_nltk()
 
     st.markdown('# ECU-Test-Doku Q&A-System')
     text_input = st.text_input(
@@ -170,4 +126,12 @@ if __name__ == "__main__":
     )
 
     if text_input:
-        answer_question(text_input, document_base)
+        answers = answer_question(text_input, document_base)
+        
+        # only render best answer for now
+        if len(answers) > 0:
+            render_answer(answers[0])
+        else:
+            st.markdown("*Keine Ergebnisse zu der Suchanfrage gefunden* 😔")
+
+
