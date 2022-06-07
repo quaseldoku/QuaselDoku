@@ -4,8 +4,8 @@ generated using Kedro 0.18.0
 """
 
 from typing import Dict
+import numpy as np
 import pandas as pd
-from torch import embedding
 from tqdm import tqdm
 from quaseldoku.qa_methods import keyword_search, word_embeddings
 from sentence_transformers import SentenceTransformer
@@ -77,7 +77,9 @@ def use_semantic_search(queries: list, embeddings: pd.DataFrame, model: Sentence
 def calc_top_n_score(keyword_results: pd.DataFrame, dataset: pd.DataFrame) -> Dict:
 
     # calc top n score for following n's
-    ns = [100, 50, 20, 10, 5, 1] 
+    # ns = [100, 50, 20, 10, 5, 1] 
+    max_n = len(dataset)
+    ns = np.linspace(1, max_n, num=max_n, dtype=np.uint)
 
     # init accuracy scores
     accuracies = {n: 0 for n in ns}

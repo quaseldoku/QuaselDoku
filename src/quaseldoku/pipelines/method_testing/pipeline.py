@@ -55,6 +55,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             outputs="ecu_keyword_search_results",
             name="keyword_search_ecu"
         ),
+        
         node(
             func=calc_top_n_score,
             inputs=["ecu_keyword_search_results", "ecu_test_doku_validation"],
