@@ -2,10 +2,11 @@ import os
 import streamlit as st
 import pandas as pd
 import nltk
+import argparse
+
+from transformers import pipeline
 from annotated_text import annotated_text
 from quaseldoku.qa_methods import keyword_search
-from quaseldoku.helper import find_project_root
-from transformers import pipeline
 
 
 @st.cache
@@ -23,22 +24,18 @@ def init_pipeline():
     )
 
 
-@st.cache
-def init_nltk():
-    nltk.download('punkt')
-
-
 def bert_answer_question(question, paragraph, qa_pipeline, top_k=3):
     return qa_pipeline(question=question, context=paragraph, top_k=top_k)
 
 
 @st.experimental_memo(show_spinner=False)
-def answer_question(question, document_base, search_n_best=3):
+def answer_question(question, document_base, ecu_search_index, search_n_best=3):
 
+    # needs to initialized here because cant be hashed and therefore not used as parameter to call this function
+    # which is necessary when using the experimental_memo decorator
     qa_pipeline = init_pipeline()
 
     # perform keyword search on ecu test index and retrieve best result
-    ecu_search_index = find_project_root(os.getcwd()) + '/data/03_primary/search_indices/ecu_test/'
     key_word_res = keyword_search.query(question, ecu_search_index)
     if len(key_word_res['hits']) < 1:
         return []
@@ -59,15 +56,13 @@ def answer_question(question, document_base, search_n_best=3):
     return sorted(possible_answers, key=lambda x: x['score'], reverse=True)
 
 
-def render_answer(answer):
+def render_answer(answer, doku_server_url):
 
     # base link to doku (will be either to web server running doku or local file)
-    _base_link = "http://127.0.0.1:5000/"
-
-    h_color = "#8ef"
+    h_color = "#31ab0f"
 
     title = answer['Title']
-    link = _base_link + answer['Filename']
+    link = doku_server_url + answer['Filename']
     text = answer['Body']
     bert_answer = answer['answer']
     score = round(answer['score'], 2)
@@ -107,14 +102,39 @@ def render_answer(answer):
     (bert_answer, str(score), h_color),
     _c_sffx)
 
+    print('link is:', link)
+
     st.markdown("***")
     st.markdown(f'**🔗 Lies mehr dazu im Kapitel [{title_display}]({link})**')
 
 
+def parse_args():
+
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('--document-base', type=str, help="path to .csv holding the document base aka parsed ecu test doku")
+    parser.add_argument('--search-index', type=str, help="path to folder containing the search index for ecu test doku")
+    parser.add_argument('--doku-url', type=str, help="url and port where server hosting the doku is running on")
+    try:
+        return parser.parse_args()
+    except SystemExit as e:
+        os._exit(e.code)
+
+
 if __name__ == "__main__":
 
-    document_base = load_document_base(find_project_root(os.getcwd()) + '/data/03_primary/doku_paragraphs.csv')
-    init_nltk()
+    args = parse_args()
+
+    # init pipeline once here so model gets cached on startup
+    init_pipeline()
+
+    # load document base
+    document_base = load_document_base(args.document_base)
+
+    # load search index
+    ecu_search_index = args.search_index
+
+    # define base url to doku server
+    doku_server_url = args.doku_url
 
     st.markdown('# ECU-Test-Doku Q&A-System')
     text_input = st.text_input(
@@ -126,11 +146,11 @@ if __name__ == "__main__":
     )
 
     if text_input:
-        answers = answer_question(text_input, document_base)
+        answers = answer_question(text_input, document_base, ecu_search_index)
         
         # only render best answer for now
         if len(answers) > 0:
-            render_answer(answers[0])
+            render_answer(answers[0], doku_server_url)
         else:
             st.markdown("*Keine Ergebnisse zu der Suchanfrage gefunden* 😔")
 

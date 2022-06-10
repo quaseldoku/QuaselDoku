@@ -16,7 +16,7 @@ import os
 from typing import Any, Callable, Dict
 from bs4 import BeautifulSoup
 from tqdm import tqdm
-from quaseldoku.helper import find_project_root
+from quaseldoku.qa_methods import helper
 
 
 def filter_doku(partitioned_input: Dict[str, Callable[[], Any]], params: Dict) -> Dict[str, Callable[[], Any]]:
@@ -273,7 +273,7 @@ def download_germanquad(path_to_load_script: str) -> pd.DataFrame:
     """
 
     # load and convert dataset
-    path_to_load_script_abs = find_project_root(os.getcwd()) + '/' + path_to_load_script
+    path_to_load_script_abs = helper.find_project_root(os.getcwd()) + '/' + path_to_load_script
     germansquad = datasets.load_dataset(path_to_load_script_abs)
 
     # convert to dict before converting to DataFrame (made parsing easier)

@@ -1,0 +1,7 @@
+streamlit
+st-annotated-text
+nltk
+pandas
+torch
+transformers
+whoosh

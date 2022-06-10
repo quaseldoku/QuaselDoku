@@ -6,7 +6,7 @@ from whoosh.analysis import StemFilter, RegexTokenizer, LowercaseFilter, StopFil
 from whoosh.qparser import QueryParser, OrGroup
 from whoosh import scoring
 from pathlib import Path
-from quaseldoku.helper import find_project_root
+from quaseldoku.qa_methods import helper
 import pandas as pd
 import os
 
@@ -46,7 +46,7 @@ def create_document_index(documents: pd.DataFrame, indexdir_path: str):
         body=TEXT(stored=True),  # indexed content
     )
 
-    project_root = find_project_root(os.getcwd())
+    project_root = helper.find_project_root(os.getcwd())
     indexdir_path_abs = project_root + '/' + indexdir_path
     print(f'document index will be strored to: {indexdir_path_abs}')
     Path(indexdir_path_abs).mkdir(parents=True, exist_ok=True)
