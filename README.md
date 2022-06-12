@@ -26,3 +26,4 @@ Bevor man das Projekt zum ersten mal ausführen kann, müssen folgende Dinge ber
 
 ## Aufbau des Projekts
 
+![Grobaufbau des Projekts](/Aufbau.jpg)
