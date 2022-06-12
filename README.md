@@ -27,3 +27,6 @@ Bevor man das Projekt zum ersten mal ausführen kann, müssen folgende Dinge ber
 ## Aufbau des Projekts
 
 ![Grobaufbau des Projekts](/Aufbau.jpg)
+
+## Quick Demo der UI
+![](https://media.giphy.com/media/pNVcKnOx3VcRGxVq8R/giphy.gif)
