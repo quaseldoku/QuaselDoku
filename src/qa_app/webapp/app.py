@@ -92,6 +92,7 @@ def render_answer(answer, doku_server_url):
     text = answer['Body']
     bert_answer = answer['answer']
     score = round(answer['score'], 2)
+    sentence = answer['sentence']
 
     # append title to link to show correct paragraph
     link += f'#{title.lower()}'
@@ -99,37 +100,25 @@ def render_answer(answer, doku_server_url):
     # format title for display later
     title_display = title.replace('-', ' ')
 
-    # find answer in context in order to highlight substring
-    answer_start = text.find(bert_answer)
+    # find answer in sentence in order to highlight substring
+    answer_start = sentence.find(bert_answer)
     answer_end = answer_start + len(bert_answer)
 
     # highlight answer in context
-    _c_prfx = text[:answer_start] 
-    _c_sffx = text[answer_end:]
-
-    # show sentence containing the bert answer
-    sentences = nltk.sent_tokenize(text, language='german')
-
-    # find sentence containing start token
-    token_count = 0
-    start_token = answer['start']
-    answer_sentence = ''
-    for s in sentences:
-        token_count += len(s)
-        if token_count >= start_token:
-            answer_sentence = s
-            break
-
-    st.markdown(f'**{answer_sentence}**')
-    # st.button('nicht die richtige Antwort?')
+    _c_prfx = sentence[:answer_start] 
+    _c_sffx = sentence[answer_end:]
 
     annotated_text(
-    _c_prfx,
+    "\""+_c_prfx,
     (bert_answer, str(score), h_color),
-    _c_sffx)
+    _c_sffx + "\"")
 
-    st.markdown("***")
-    st.markdown(f'**🔗 Lies mehr dazu im Kapitel [{title_display}]({link})**')
+    # create vertical space
+    st.markdown("\n")
+
+    with st.expander(f"(klicke um zugehörigen Abschnitt anzuzeigen)"):
+        st.markdown(f'*{text}*')
+    st.markdown(f'*🔗  Für weiterführende Information siehe das Kapitel [{title_display}]({link}) in der ECU-Test-Dokumentation*')
 
 
 def parse_args():
