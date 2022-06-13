@@ -45,15 +45,41 @@ def answer_question(question, document_base, ecu_search_index, search_n_best=3):
     # with retrieved hash look up context, title, etc. in document base
     best_documents = document_base[document_base['Hash'].isin(n_best_hashes)]
 
+    # running text bodies of best n documents through bert model and merge results with document
     possible_answers = []
     with st.spinner('asking BERT ...'):
-        # running text bodies of best n documents through bert model and merge results with document
         for _, row in best_documents.iterrows():
             bert_answers = bert_answer_question(question, row['Body'], qa_pipeline, top_k=3)
             for ba in bert_answers:
                 possible_answers.append({**row, **ba})
-                
-    return sorted(possible_answers, key=lambda x: x['score'], reverse=True)
+
+    # sort answers according to bert score
+    possible_answers = sorted(possible_answers, key=lambda x: x['score'], reverse=True)
+
+    # find sentence containing the answer for every bert answer and only keep the best one for every unique sentence
+    selected_answers = []
+    for pa in possible_answers:
+        # find sentence in context containing answer
+        sentences = nltk.sent_tokenize(pa['Body'], language='german')
+        token_count = 0
+        start_token = pa['start']
+        answer_sentence = ''
+        for s in sentences:
+            token_count += len(s)
+            if token_count >= start_token:
+                answer_sentence = s
+                break
+        # if sentence already in answer dont keep this answer
+        matching_answers = [a for a in selected_answers if a['sentence'] == answer_sentence]
+        if len(matching_answers) > 0:
+            continue
+        else:
+            selected_answers.append({'sentence': answer_sentence, **pa})
+
+    # reset answer counter because new answer were generated                
+    st.session_state.answer_counter = 0
+
+    return selected_answers
 
 
 def render_answer(answer, doku_server_url):
@@ -95,14 +121,12 @@ def render_answer(answer, doku_server_url):
             break
 
     st.markdown(f'**{answer_sentence}**')
-    st.button('nicht die richtige Antwort?')
+    # st.button('nicht die richtige Antwort?')
 
     annotated_text(
     _c_prfx,
     (bert_answer, str(score), h_color),
     _c_sffx)
-
-    print('link is:', link)
 
     st.markdown("***")
     st.markdown(f'**🔗 Lies mehr dazu im Kapitel [{title_display}]({link})**')
@@ -136,6 +160,10 @@ if __name__ == "__main__":
     # define base url to doku server
     doku_server_url = args.doku_url
 
+    # init session state
+    if 'answer_counter' not in st.session_state:
+        st.session_state['answer_counter'] = 0
+
     st.markdown('# ECU-Test-Doku Q&A-System')
     text_input = st.text_input(
         "Hier kannst Du eine Frage stellen ...",
@@ -147,11 +175,16 @@ if __name__ == "__main__":
 
     if text_input:
         answers = answer_question(text_input, document_base, ecu_search_index)
-        
-        # only render best answer for now
         if len(answers) > 0:
-            render_answer(answers[0], doku_server_url)
+            col1, col2, _ = st.columns(3)
+            bt_next_answer = col1.button('nicht die richtige Antwort?') 
+            if bt_next_answer:
+                if st.session_state.answer_counter < len(answers) - 1:
+                    st.session_state.answer_counter += 1
+                else:
+                    st.session_state.answer_counter = 0
+            col2.markdown(f"*Antwort {st.session_state.answer_counter+1} von {len(answers)}*")
+            render_answer(answers[st.session_state.answer_counter], doku_server_url)
         else:
             st.markdown("*Keine Ergebnisse zu der Suchanfrage gefunden* 😔")
-
 
