@@ -33,7 +33,11 @@ ecu_test_doku_paragraphs:
 test_results:
   type: pandas.CSVDataSet
   filepath: data/08_reporting/test_results.csv
-  
+
+bert_results:
+  type: pandas.CSVDataSet
+  filepath: data/08_reporting/bert_results.csv
+
 sentence_transformer_model:
   type: pickle.PickleDataSet
   filepath: data/06_models/msmarco-distilbert-base-v4.pkl

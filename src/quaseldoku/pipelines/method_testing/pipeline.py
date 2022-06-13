@@ -4,7 +4,7 @@ generated using Kedro 0.18.0
 """
 
 from kedro.pipeline import Pipeline, node, pipeline
-from .nodes import use_keyword_search, prepare_questions, calc_top_n_score, log_metrics, use_semantic_search
+from .nodes import use_keyword_search, prepare_questions, calc_top_n_score, log_metrics, use_semantic_search, use_bert, log_bert
 
 
 def create_pipeline(**kwargs) -> Pipeline:
@@ -42,7 +42,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             name="semantic_accuracy_germanquad"
         ),
         # ECU TEST
-        # keyword-search
+        # keyword-search & BERT
         node(
             func=prepare_questions,
             inputs="ecu_test_doku_validation",
@@ -55,12 +55,29 @@ def create_pipeline(**kwargs) -> Pipeline:
             outputs="ecu_keyword_search_results",
             name="keyword_search_ecu"
         ),
-        
         node(
             func=calc_top_n_score,
             inputs=["ecu_keyword_search_results", "ecu_test_doku_validation"],
             outputs="ecu_accuracies",
             name="top_n_ecu"
+        ),
+        node(
+            func=use_bert,
+            inputs=["ecu_keyword_search_results", "ecu_test_doku_paragraphs"],
+            outputs="bert_ecu_results",
+            name="bert_ecu"
+        ),
+        node(
+            func=calc_top_n_score,
+            inputs=["bert_ecu_results", "ecu_test_doku_validation"],
+            outputs="ecu_bert_accuracies",
+            name="top_n_ecu_bert"
+        ),
+        node(
+            func=log_bert,
+            inputs="ecu_bert_accuracies",
+            outputs="bert_results",
+            name="log_bert"
         ),
         # semantic search
         node(
