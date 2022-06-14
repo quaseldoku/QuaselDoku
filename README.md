@@ -1,16 +1,16 @@
 # Q&A NLP Sprachmodell für die ECU-Test Dokumentation
 
-<p align="center">
-![](/Fast_Demo.gif)
-</p>
-
 Diese Projekt stellt eine Möglichkeit vor, wie mittels NLP Suchanfragen für die ECU-Test Dokumentation verarbeitet werden können. Um das finale Ergebnis zu betrachen,
 reicht es das hier vorhandene Docker-Image auszuführen. Für die Betrachtung der einzelnen Arbeitsschritte bis zum finalen Ergebnis und zur Evaluierung der einzelnen Schritte
 können über Kedro verschiedene Pipelines ausgeführt werden. Genauere Details über den Entstehungsprozess findet man in den Jupyter Notebooks.
 
+<p align="center">
+  <img src="/Fast_Demo.gif" alt="animated" />
+</p>
+
 ## Aufgabenstellung
 Ziel war die Erweiterung der Suchfunktion für die Dokumentation der TraceTronic eigenen Software ECU-TEST auf Basis von Deep-Learning Sprachmodellen.
-Dazu wurde sich zunächst mit dem Datensatz vertraut gemacht, es wurden Metriken zur Bewertung der entstandenen Ergebnisse erstellt und ein passende Modelle ausgewählt.
+Dazu wurde sich zunächst mit dem Datensatz vertraut gemacht, es wurden Metriken zur Bewertung der entstandenen Ergebnisse erstellt und ein passendes Modell ausgewählt.
 Im Anschluss wurde eine skalierbare und erweiterbare Lösung mit Hilfe von Software-Stacks implementiert. Zum Schluss wurden die Ergebnisse evaluiert. Zusätzlich wurde 
 eine Benutzerschnittstelle erstellt welche in einem Docker-Container ausgerollt wurde.
 
