@@ -31,7 +31,7 @@ Bevor man das Projekt zum ersten mal ausführen kann, müssen folgende Dinge ber
 
 ## Aufbau des Projekts
 
-![Grobaufbau des Projekts](/Aufbau.jpg)
+![Grobaufbau des Projekts](/Aufbau_genauer.jpg)
 
 ## Wichtige Befehle
 Dieses Projekt besteht aus verschiedenen Teilkomponenten, hier sind die wichtigsten Befehle aufgelistet, um auf die Komponenten gezielt zugreifen zu können.
