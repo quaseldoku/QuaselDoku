@@ -1,6 +1,8 @@
 # Q&A NLP Sprachmodell für die ECU-Test Dokumentation
 
+<p align="center">
 ![](/Fast_Demo.gif)
+</p>
 
 Diese Projekt stellt eine Möglichkeit vor, wie mittels NLP Suchanfragen für die ECU-Test Dokumentation verarbeitet werden können. Um das finale Ergebnis zu betrachen,
 reicht es das hier vorhandene Docker-Image auszuführen. Für die Betrachtung der einzelnen Arbeitsschritte bis zum finalen Ergebnis und zur Evaluierung der einzelnen Schritte
