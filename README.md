@@ -1,4 +1,7 @@
 # Q&A NLP Sprachmodell für die ECU-Test Dokumentation
+
+![](/Fast_Demo.gif)
+
 Diese Projekt stellt eine Möglichkeit vor, wie mittels NLP Suchanfragen für die ECU-Test Dokumentation verarbeitet werden können. Um das finale Ergebnis zu betrachen,
 reicht es das hier vorhandene Docker-Image auszuführen. Für die Betrachtung der einzelnen Arbeitsschritte bis zum finalen Ergebnis und zur Evaluierung der einzelnen Schritte
 können über Kedro verschiedene Pipelines ausgeführt werden. Genauere Details über den Entstehungsprozess findet man in den Jupyter Notebooks.
@@ -59,6 +62,3 @@ docker-compose up
 ```
 Dieser Befehl aggregiert die Ausgaben der zwei Docker-Container des Projekts und ermöglicht letzten Endes ein Ausführen der Weboberfläche.
 
-
-## Quick Demo der UI
-![](https://media.giphy.com/media/tYIQBm1qIHPBUGG0u8/giphy.gif)
