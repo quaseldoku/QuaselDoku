@@ -28,5 +28,37 @@ Bevor man das Projekt zum ersten mal ausführen kann, müssen folgende Dinge ber
 
 ![Grobaufbau des Projekts](/Aufbau.jpg)
 
+## Wichtige Befehle
+Dieses Projekt besteht aus verschiedenen Teilkomponenten, hier sind die wichtigsten Befehle aufgelistet, um auf die Komponenten gezielt zugreifen zu können.
+
+### Kedro pipeline
+Es gibt zwei große Pipelines in diesem Projekt: Die eine dient dem Aufbau des Modells, inklusive des Parsing der Dokumentation, die andere dient der Evaluation der Modelle.
+
+Zum Aufruf der Deploiment Pipeline kann der folgende Befehl verwendet werden:
+
+```
+kedro run --pipeline dp
+```
+
+Zum Aufruf der Test Pipeline wiederum dieser Befehl:
+
+```
+kedro run --pipeline validation
+```
+
+### Aufruf des User Interface über Docker
+Dieses Projekt enthält eine minimalistische Weboberfläche, diese kann durch einen Docker Container verwendet werden. Um die Oberfläche zu starten kann die folgenden Befehle ausgeführt werden:
+
+```
+docker-compose build
+```
+Erzeugt ein Image, dieses sollte zu Beginn einmal erzeugt werden, um die Container darauf laufen zu lassen.
+
+```
+docker-compose up
+```
+Dieser Befehl aggregiert die Ausgaben der zwei Docker-Container des Projekts und ermöglicht letzten Endes ein Ausführen der Weboberfläche.
+
+
 ## Quick Demo der UI
 ![](https://media.giphy.com/media/pNVcKnOx3VcRGxVq8R/giphy.gif)
