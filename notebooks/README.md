@@ -41,3 +41,6 @@ Dieses Notebook dient zur Formulierung möglicher Test-Fragen für den ECU-Test 
 
 ## verfahrensrecherche
 Hierbei handelt es sich um eine Übersichtsseite, in der mögliche Q&A Modelle und weitere mögliche Vorgehensweisen für das Projekt gesammelt werden konnten. Es enthält Informationen zu möglichen Q&A Verfahren, Gütemaßen, Ground Truth Definitionen, etc.
+
+## Fine-tuning_a_model
+Dieses Notebook beschreibt die Möglichkeit, ein vortrainiertes Model von Huggingface mit eigenen Daten zu finetunen.
