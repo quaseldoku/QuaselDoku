@@ -61,4 +61,4 @@ Dieser Befehl aggregiert die Ausgaben der zwei Docker-Container des Projekts und
 
 
 ## Quick Demo der UI
-![](https://media.giphy.com/media/yLmX7nL1HrgFmfSbWG/giphy.gif)
+![](https://media.giphy.com/media/tYIQBm1qIHPBUGG0u8/giphy.gif)
