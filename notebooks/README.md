@@ -1,4 +1,4 @@
-# Übersicht der Nootebooks
+# Übersicht der Notebooks
 Hier sind alle im Projekt entstandenen Jupyter Notebooks aufgelistet und kurz beschrieben. 
 In der Regel sind die Notebooks während der Recherche oder Vorarbeit neuer Funktionen entstanden, die später in die Kedro pipeline eingepflegt werden sollen.
 
